@@ -10,6 +10,17 @@
 
 This project aims to provide a secure and flexible solution for file encryption, making it easy for users to protect their sensitive data using various encryption techniques.
 
+## Makefile Overview
+
+The provided Makefile automates the process of compiling, running, and cleaning up the project. It has four primary targets:
+
+    all: Default target that will run the program after compiling.
+    run: Runs the compiled encryption program.
+    compile: Compiles the main.c file into an executable program named encryption_program.
+    clean: Removes the compiled executable encryption_program.
+    clean_all: Removes all *.bin files and the encryption_program executable.
+
+
 ---
 
 ## Features

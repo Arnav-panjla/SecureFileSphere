@@ -3,6 +3,33 @@
 # include <stdlib.h>
 # include <openssl/aes.h>
 
+
+#define STATE_ARRAY_SIZE 256
+
+
+unsigned char* key = "password!@#";
+
+// RC4 state initialization
+void initialize_state(unsigned char state[], const unsigned char key[], int key_length) {
+    int i, j = 0;
+    unsigned char temp;
+    
+    // Initialize state array
+    for (i = 0; i < STATE_ARRAY_SIZE; i++) {
+        state[i] = i;
+    }
+    
+    // Key scheduling algorithm (KSA)
+    for (i = 0; i < STATE_ARRAY_SIZE; i++) {
+        j = (j + state[i] + key[i % key_length]) % STATE_ARRAY_SIZE;
+        // Swap state[i] and state[j]
+        temp = state[i];
+        state[i] = state[j];
+        state[j] = temp;
+    }
+}
+
+
 unsigned char* encrypt_with_AES(unsigned char *input, long size) {
     // AES_KEY encryptKey;
     unsigned char key[32] = {0}; // 256-bit key for AES
@@ -14,6 +41,46 @@ unsigned char* encrypt_with_AES(unsigned char *input, long size) {
     return output;
     // Now write the encrypted data to a file or output buffer
 }
+
+// RC4 encryption/decryption function that returns a buffer
+unsigned char* rc4_crypt(const unsigned char* input_buffer, size_t input_length, 
+                        const unsigned char key[], int key_length, size_t* output_length) {
+    unsigned char state[STATE_ARRAY_SIZE];
+    unsigned char* output_buffer;
+    int i = 0, j = 0;
+    unsigned char temp;
+    size_t pos;
+    
+    // Allocate output buffer
+    output_buffer = (unsigned char*)malloc(input_length);
+    if (output_buffer == NULL) {
+        *output_length = 0;
+        return NULL;
+    }
+    *output_length = input_length;
+    
+    // Initialize RC4 state
+    initialize_state(state, key, key_length);
+    
+    // Process each byte of the input buffer
+    for (pos = 0; pos < input_length; pos++) {
+        // Generate pseudorandom byte
+        i = (i + 1) % STATE_ARRAY_SIZE;
+        j = (j + state[i]) % STATE_ARRAY_SIZE;
+        
+        // Swap state[i] and state[j]
+        temp = state[i];
+        state[i] = state[j];
+        state[j] = temp;
+        
+        // XOR input byte with generated key byte
+        output_buffer[pos] = input_buffer[pos] ^ 
+                            state[(state[i] + state[j]) % STATE_ARRAY_SIZE];
+    }
+    
+    return output_buffer;
+}
+
 
 void outputFileNamer(char *input_path, char *encryption_type, char *output_path) {
 
@@ -61,6 +128,7 @@ int main() {
     fclose(inputFile);
 
     printf(buffer);
+    // printf(fileSize);
 
     int choice;
     printf("Choose encryption algorithm:\n");
@@ -76,7 +144,8 @@ int main() {
 
     switch(choice) {
         case 1: 
-            // encrypt_with_RC4(buffer, fileSize);
+            size_t output_length;
+            outputBuffer = rc4_crypt(buffer, fileSize, key, strlen(key), &output_length);
             outputFileNamer(input_path, "RC4", output_path);
             break;
         case 2: 

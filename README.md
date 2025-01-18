@@ -17,7 +17,7 @@ The provided Makefile automates the process of compiling, running, and cleaning 
     all: Default target that will run the program after compiling.
     run: Runs the compiled encryption program.
     compile: Compiles the main.c file into an executable program named encryption_program.
-    clean: Removes the compiled executable encryption_program.
+    clean: Removes all *.bin files (all encrypted files)
     clean_all: Removes all *.bin files and the encryption_program executable.
 
 
